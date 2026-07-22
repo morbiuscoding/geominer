@@ -161,7 +161,7 @@ function publicState(player) {
       geoliteEarned: Number(player.geoliteEarned.toFixed(4)),
       energy: Math.floor(player.energy),
       activeMine: player.activeMine,
-      mineHealth: Math.max(0, Math.ceil(player.mineHealth)),
+      mineHealth: Math.max(0, Math.floor(player.mineHealth)),
       picks: player.picks,
       upgrades: player.upgrades,
     },
