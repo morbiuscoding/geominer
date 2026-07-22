@@ -71,13 +71,14 @@ module.exports = io => {
 
             await repository.save(player);
 
-            socket.emit(
+            socket.emit("state", state);
 
-                "state",
-
-                state
-
-            );
+            // Emit any automatic strike events so the client can render them like taps
+            if (state.events && state.events.length) {
+                for (const ev of state.events) {
+                    socket.emit("mined", ev);
+                }
+            }
 
         }
 

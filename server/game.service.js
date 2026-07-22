@@ -127,17 +127,24 @@ function applyElapsed(player) {
     player.energy + (elapsedMs / 60000) * s.regenPerMinute,
   );
   clearExpiredPicks(player, now);
+
+  const events = [];
   // Apply equipped pick auto-damage distributed across time (per-minute ticks)
   const pick = equippedPick(player);
   if (pick && minutes) {
     // original pick.damage represented damage per hour; distribute per minute
     const perMinute = (pick.damage + s.damage) / 60;
-    for (let i = 0; i < minutes; i++) strike(player, perMinute, "auto");
+    for (let i = 0; i < minutes; i++) {
+      const res = strike(player, perMinute, "auto");
+      events.push(res);
+      if (res.completed) break; // stop further ticks if mine finished
+    }
   }
   player.lastUpdated = now;
+  return events;
 }
 function publicState(player) {
-  applyElapsed(player);
+  const events = applyElapsed(player) || [];
   const s = stats(player),
     mine = activeMine(player),
     equipped = equippedPick(player);
@@ -168,6 +175,8 @@ function publicState(player) {
         level: player.upgrades?.[up.id] || 0,
         cost: upgradeCost(up, player.upgrades?.[up.id] || 0),
       })),
+    },
+    events,
     },
   };
 }
