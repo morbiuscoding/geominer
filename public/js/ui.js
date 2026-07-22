@@ -113,22 +113,24 @@ export function render(state, emit) {
 
 function renderLeaderboard(leaderboard) {
   if (!leaderboard) return;
-  const renderLines = (list) =>
+  const formatValue = (value) =>
+    typeof value === "number" ? fmt(value) : value;
+  const renderLines = (list, floorNumbers = false) =>
     list
-      .map(
-        (item) =>
-          `<div class="leaderboard-item"><span class="leaderboard-rank">${item.rank}</span><span class="leaderboard-name">${item.name}</span><span class="leaderboard-value">${item.value}</span></div>`,
-      )
+      .map((item) => {
+        const value = floorNumbers ? fmt(Math.floor(item.value)) : item.value;
+        return `<div class="leaderboard-item"><span class="leaderboard-rank">${item.rank}</span><span class="leaderboard-name">${item.name}</span><span class="leaderboard-value">${value}</span></div>`;
+      })
       .join("");
-  const renderCurrent = (current) =>
+  const renderCurrent = (current, floorNumbers = false) =>
     current
-      ? `<div class="leaderboard-current">Tu posición: #${current.rank} — ${current.name} — ${current.value}</div>`
+      ? `<div class="leaderboard-current">Tu posición: #${current.rank} — ${current.name} — ${floorNumbers ? fmt(Math.floor(current.value)) : current.value}</div>`
       : "";
 
   els["rank-upgrades"].innerHTML =
     renderLines(leaderboard.topUpgrades) + renderCurrent(leaderboard.currentUpgrade);
   els["rank-geopoints"].innerHTML =
-    renderLines(leaderboard.topGeoPoints) + renderCurrent(leaderboard.currentGeoPoints);
+    renderLines(leaderboard.topGeoPoints, true) + renderCurrent(leaderboard.currentGeoPoints, true);
   els["rank-geolite"].innerHTML =
     renderLines(leaderboard.topGeolite) + renderCurrent(leaderboard.currentGeolite);
 }
