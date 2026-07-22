@@ -1,167 +1,19 @@
-/* ==========================================================
-   MINES
-========================================================== */
-
 const mines = [
-
-    {
-        id: "bronze",
-        name: "Mina de Bronce",
-        color: "#bd7745",
-        level: 1
-    },
-
-    {
-        id: "silver",
-        name: "Mina de Plata",
-        color: "#c2d5e2",
-        level: 4
-    },
-
-    {
-        id: "gold",
-        name: "Mina de Oro",
-        color: "#ffca55",
-        level: 8
-    },
-
-    {
-        id: "platinum",
-        name: "Mina de Platino",
-        color: "#91e7df",
-        level: 14
-    },
-
-    {
-        id: "diamond",
-        name: "Mina Diamante",
-        color: "#7dceff",
-        level: 22
-    },
-
-    {
-        id: "titanium",
-        name: "Mina Titanio",
-        color: "#ae90ff",
-        level: 32
-    }
-
-];
-
-
-/* ==========================================================
-   PICKAXES
-========================================================== */
+  ['bronze', 'Mina de Cobre', '#c77b42', 250, 0.005, 0.5], ['silver', 'Mina de Plata', '#c2d5e2', 500, 0.015, 1.5],
+  ['gold', 'Mina de Oro', '#ffca55', 1000, 0.03, 3], ['platinum', 'Mina de Platino', '#91e7df', 2000, 0.06, 6],
+  ['diamond', 'Mina Diamante', '#7dceff', 4000, 0.12, 12], ['titanium', 'Mina Titanio', '#ae90ff', 8000, 0.24, 24]
+].map(([id, name, color, health, geoliteMin, geoliteMax], index) => ({ id, name, color, health, geoliteMin, geoliteMax, geoReward: 100 + (index + 1) * 100 }));
 
 const picks = [
-
-    {
-        id: "bronze",
-        name: "Pico de Bronce",
-        dps: 6,
-        cost: 250
-    },
-
-    {
-        id: "silver",
-        name: "Pico de Plata",
-        dps: 18,
-        cost: 1200
-    },
-
-    {
-        id: "gold",
-        name: "Pico de Oro",
-        dps: 45,
-        cost: 5500
-    },
-
-    {
-        id: "platinum",
-        name: "Pico de Platino",
-        dps: 100,
-        cost: 18000
-    },
-
-    {
-        id: "diamond",
-        name: "Pico Diamante",
-        dps: 220,
-        cost: 65000
-    },
-
-    {
-        id: "titanium",
-        name: "Pico Titanio",
-        dps: 500,
-        cost: 225000
-    }
-
-];
-
-
-/* ==========================================================
-   UPGRADES
-========================================================== */
+  ['bronze', 'Pico de Bronce', 50, 1], ['silver', 'Pico de Plata', 100, 3], ['gold', 'Pico de Oro', 200, 8],
+  ['platinum', 'Pico de Platino', 400, 20], ['diamond', 'Pico Diamante', 800, 50], ['titanium', 'Pico Titanio', 1600, 120]
+].map(([id, name, damage, geoliteCost]) => ({ id, name, damage, geoliteCost }));
 
 const upgrades = [
-
-    {
-        id: "tapPower",
-        name: "Fuerza de golpe",
-        description: "+5 GEO por toque",
-        baseCost: 100,
-        factor: 1.55,
-        max: 50
-    },
-
-    {
-        id: "energyRegen",
-        name: "Recarga energética",
-        description: "+2 energía por segundo",
-        baseCost: 160,
-        factor: 1.60,
-        max: 25
-    },
-
-    {
-        id: "maxEnergy",
-        name: "Batería ampliada",
-        description: "+100 energía máxima",
-        baseCost: 220,
-        factor: 1.65,
-        max: 20
-    },
-
-    {
-        id: "extraOre",
-        name: "Veta abundante",
-        description: "+5% mineral adicional",
-        baseCost: 350,
-        factor: 1.70,
-        max: 20
-    },
-
-    {
-        id: "superOre",
-        name: "Detector superior",
-        description: "+2% probabilidad de mineral x2",
-        baseCost: 600,
-        factor: 1.80,
-        max: 20
-    }
-
+  { id: 'tapPower', name: 'Fuerza de golpe', description: '+1 daño por toque', baseCost: 100, factor: 1.55, max: 100 },
+  { id: 'energyRegen', name: 'Recarga energética', description: '+1 energía por minuto', baseCost: 120, factor: 1.6, max: 55 },
+  { id: 'maxEnergy', name: 'Batería ampliada', description: '+10 energía máxima', baseCost: 180, factor: 1.65, max: 90 },
+  { id: 'criticalChance', name: 'Golpe crítico', description: '+1% de probabilidad crítica', baseCost: 250, factor: 1.75, max: 40 },
+  { id: 'mineSearch', name: 'Radar geológico', description: '+1% de probabilidad de encontrar minas mejores', baseCost: 1000, fixedCost: true, max: 40 }
 ];
-
-
-/* ==========================================================
-   EXPORTS
-========================================================== */
-
-module.exports = {
-
-    mines,
-    picks,
-    upgrades
-
-};
+module.exports = { mines, picks, upgrades };

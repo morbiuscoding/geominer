@@ -4,6 +4,7 @@ import { MineScene } from "./mine-scene.js";
 
 let scene = null;
 let state = null;
+window.geoMine = () => socket.emit("mine");
 
 
 /* ==========================================================
@@ -30,7 +31,7 @@ const game = new Phaser.Game({
 });
 
 
-game.events.once("ready", initializeScene);
+setTimeout(initializeScene, 100);
 
 
 /* ==========================================================
@@ -41,11 +42,7 @@ function initializeScene(){
 
     scene = game.scene.getScene("mine");
 
-    scene.events.on("mine", payload => {
-
-        socket.emit("mine", payload);
-
-    });
+    if (state) refreshMineVisuals();
 
 }
 
@@ -54,7 +51,10 @@ function initializeScene(){
    SOCKET EVENTS
 ========================================================== */
 
-socket.on("state", updateState);
+socket.on("state", (next) => {
+    console.debug("state received", next);
+    updateState(next);
+});
 
 socket.on("mined", onMineReward);
 
@@ -83,18 +83,14 @@ function updateState(next){
 
     });
 
-    const mine = state.catalogs.mines.find(
+    refreshMineVisuals();
 
-        m => m.id === state.player.activeMine
+}
 
-    );
-
-    if(mine){
-
-        scene?.setMine(mine.color);
-
-    }
-
+function refreshMineVisuals() {
+    const mine = state?.catalogs.mines.find(m => m.id === state.player.activeMine);
+    if (mine) scene?.setMine(mine.color);
+    scene?.setPickActive(state?.stats.equippedPick);
 }
 
 
@@ -111,11 +107,15 @@ function onMineReward(result){
 
     scene?.float(
 
-        result.gain,
+        result.damage,
         null,
-        result.superior
+        result.critical
 
     );
+
+    if (result.completed) {
+        toast(`¡${result.completed.mine} completada! +${result.completed.geopoints} GeoPoints, +${result.completed.geolite} Geolita. Nueva: ${result.completed.nextMine}`);
+    }
 
 }
 
@@ -136,6 +136,12 @@ document
 
     });
 
+document.querySelectorAll("[data-crypto]").forEach(button => {
+    button.addEventListener("click", () => socket.emit("cryptoRequest", button.dataset.crypto));
+});
+
+document.querySelector(".profile")?.addEventListener("click", () => changeView("profile"));
+
 
 function changeView(view){
 
@@ -150,7 +156,7 @@ function changeView(view){
         .remove("active");
 
     document
-        .querySelector(`[data-tab="${view}"]`)
+        .querySelector(`.bottom-nav [data-tab="${view}"]`)
         ?.classList
         .add("active");
 

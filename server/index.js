@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const http = require("http");
 const path = require("path");
@@ -56,7 +58,7 @@ start();
 async function start() {
 
     try {
-
+        console.log(mongoUri);
         await repository.connect(mongoUri);
 
         server.listen(port, () => {

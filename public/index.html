@@ -1,338 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
-<head>
-
-    <meta charset="UTF-8">
-
+  <head>
+    <meta charset="UTF-8" />
     <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-    <meta
-        name="theme-color"
-        content="#101A26">
-
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101A26" />
     <title>GeoMiner</title>
-
-    <link rel="stylesheet" href="styles.css">
-
-    <!-- Telegram -->
+    <link rel="stylesheet" href="styles.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- Phaser -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-
-    <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
-
-</head>
-
-<body>
-
-<main class="app-shell">
-
-    <!-- ========================================= -->
-    <!-- HEADER -->
-    <!-- ========================================= -->
-
-    <header class="topbar">
-
-        <div class="profile">
-
-            <div class="avatar">
-                G
-            </div>
-
-            <div>
-
-                <strong id="player-name">
-                    MINERO
-                </strong>
-
-                <small>
-                    MINA ACTIVA
-                </small>
-
-            </div>
-
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <button class="profile" data-tab="profile">
+          <span class="avatar">G</span
+          ><span
+            ><strong id="player-name">MINERO</strong
+            ><small>VER PERFIL</small></span
+          ></button
+        ><span class="online">● EN LÍNEA</span>
+      </header>
+      <section class="currencies">
+        <div class="balance-panel">
+          <span class="gem">◆</span><strong id="geopoints">0</strong
+          ><span class="ore-unit">GEOPOINTS</span>
         </div>
-
-        <span class="online">
-            ● EN LÍNEA
-        </span>
-
-    </header>
-
-
-    <!-- ========================================= -->
-    <!-- BALANCE -->
-    <!-- ========================================= -->
-
-    <section class="balance-panel">
-
-        <span class="gem">◆</span>
-
-        <strong id="balance">
-            0
-        </strong>
-
-        <span class="ore-unit">
-            GEO
-        </span>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- PLAYER STATS -->
-    <!-- ========================================= -->
-
-    <section class="stats-row">
-
-        <article class="stat-card">
-
-            <span>⚡</span>
-
-            <p>
-
-                <small>ENERGÍA</small>
-
-                <strong id="energy">
-                    0 / 0
-                </strong>
-
-            </p>
-
-        </article>
-
-        <article class="stat-card">
-
-            <span>⛏</span>
-
-            <p>
-
-                <small>POR TOQUE</small>
-
-                <strong id="per-tap">
-                    +0 GEO
-                </strong>
-
-            </p>
-
-        </article>
-
-        <article class="stat-card">
-
-            <span>◷</span>
-
-            <p>
-
-                <small>AUTOMÁTICO</small>
-
-                <strong id="per-second">
-                    0 GEO/s
-                </strong>
-
-            </p>
-
-        </article>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- VISTA MINAR -->
-    <!-- ========================================= -->
-
-    <section
-        id="mine-view"
-        class="view active">
-
+        <div class="geolite-panel">
+          <span>✦</span><strong id="geolite">0.0000</strong
+          ><small>GEOLITA</small>
+          <small class="geolite-usd" id="geolite-usd">≈ $0.00</small>
+        </div>
+      </section>
+      <section class="stats-row">
+        <div class="stat-card">
+          <span>⚡</span>
+          <p><small>ENERGÍA</small><strong id="energy">0 / 0</strong></p>
+        </div>
+        <div class="stat-card">
+          <span>⛏</span>
+          <p><small>DAÑO</small><strong id="per-tap">+0</strong></p>
+        </div>
+        <div class="stat-card">
+          <span>◷</span>
+          <p><small>AUTO / HORA</small><strong id="per-second">0</strong></p>
+        </div>
+      </section>
+      <section id="mine-view" class="view active">
+        <div class="mine-status">
+          <span id="mine-name">Mina de Cobre</span
+          ><strong id="mine-health">0 / 0 HP</strong>
+        </div>
+        <div class="health-track"><div id="mine-health-fill"></div></div>
         <div class="mine-wrap">
-
-            <div id="phaser-game"></div>
-
-            <p id="tap-hint">
-                TOCA LA VETA PARA MINAR
-            </p>
-
+          <div id="phaser-game"></div>
+          <p id="tap-hint">TOCA LA VETA PARA MINAR</p>
         </div>
-
         <div class="energy-line">
-
-            <span>
-
-                ⚡
-
-                <b id="energy-text">
-                    0
-                </b>
-
-                <i id="max-energy">
-                    /0
-                </i>
-
-            </span>
-
-            <div class="energy-track">
-
-                <div
-                    id="energy-fill"
-                    class="energy-fill">
-                </div>
-
-            </div>
-
-            <span id="regen">
-                +0 / seg
-            </span>
-
+          <span>⚡ <b id="energy-text">0</b><i id="max-energy">/0</i></span>
+          <div class="energy-track">
+            <div id="energy-fill" class="energy-fill"></div>
+          </div>
+          <span id="regen">+0 / min</span>
         </div>
-
-        <div
-            id="mine-selector"
-            class="mine-selector">
-        </div>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- TIENDA -->
-    <!-- ========================================= -->
-
-    <section
-        id="boost-view"
-        class="view">
-
-        <h2>
-            Mejoras
-        </h2>
-
+        <section class="search-card">
+          <strong>Buscar nueva mina</strong>
+          <p>
+            Consume 50 de energía. El radar aumenta las probabilidades de minas
+            mejores.
+          </p>
+          <button id="find-mine">⌕ BUSCAR · 50 ⚡</button
+          ><small id="search-chances"></small>
+        </section>
+      </section>
+      <section id="boost-view" class="view">
+        <h2>Mejoras</h2>
+        <p class="intro">Las mejoras se compran con GeoPoints.</p>
+        <div id="upgrade-list" class="shop-list"></div>
+        <h2>Tienda de picos</h2>
         <p class="intro">
-            Invierte GEO para aumentar tu producción.
+          Se pagan con Geolita. Cada unidad dura 24 horas; se usa el pico de
+          mayor daño.
         </p>
-
-        <div
-            id="upgrade-list"
-            class="shop-list">
+        <div id="pick-list" class="shop-list"></div>
+      </section>
+      <section id="profile-view" class="view">
+        <h2>Perfil de minero</h2>
+        <div class="profile-card balance-card">
+          <p>Saldo total</p>
+          <strong id="profile-geolite">0.0000 ✦</strong>
+          <small id="profile-geolite-usd">≈ $0.00</small>
         </div>
-
-        <h2>
-            Mis picos
-        </h2>
-
-        <div
-            id="pick-list"
-            class="shop-list">
-        </div>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- AMIGOS -->
-    <!-- ========================================= -->
-
-    <section
-        id="friends-view"
-        class="view empty-view">
-
-        <span>♧</span>
-
-        <h2>
-            Invita a tu equipo
-        </h2>
-
-        <p>
-            Pronto podrás compartir recompensas con tus amigos.
+        <h2>Crypto</h2>
+        <p class="intro">
+          Los depósitos y retiros se registran como solicitud. La validación
+          on-chain requiere un proveedor de pagos.
         </p>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- TAREAS -->
-    <!-- ========================================= -->
-
-    <section
-        id="tasks-view"
-        class="view empty-view">
-
+        <div class="crypto-actions">
+          <button data-crypto="deposit">＋ Ingresar Geolita</button
+          ><button data-crypto="withdraw">↑ Retirar Geolita</button>
+        </div>
+      </section>
+      <section id="rank-view" class="view">
+        <h2>Ranking global</h2>
+        <div class="leaderboard-grid leaderboard-top">
+          <article class="leaderboard-card leaderboard-main">
+            <strong>Minero con más mejoras</strong>
+            <div id="rank-upgrades"></div>
+          </article>
+          <article class="leaderboard-card leaderboard-side">
+            <strong>Top GeoPoints</strong>
+            <div id="rank-geopoints"></div>
+          </article>
+          <article class="leaderboard-card leaderboard-side">
+            <strong>Top Geolita</strong>
+            <div id="rank-geolite"></div>
+          </article>
+        </div>
+      </section>
+      <section id="tasks-view" class="view empty-view">
         <span>✓</span>
-
-        <h2>
-            Tareas diarias
-        </h2>
-
-        <p>
-            Las misiones de minero llegarán pronto.
-        </p>
-
-    </section>
-
-
-    <!-- ========================================= -->
-    <!-- BOTTOM NAVIGATION -->
-    <!-- ========================================= -->
-
-    <nav class="bottom-nav">
-
-        <button
-            class="nav-item active"
-            data-tab="mine">
-
-            <span>⛏</span>
-            MINAR
-
-        </button>
-
-        <button
-            class="nav-item"
-            data-tab="boost">
-
-            <span>⚡</span>
-            MEJORAR
-
-        </button>
-
-        <button
-            class="nav-item"
-            data-tab="friends">
-
-            <span>♧</span>
-            AMIGOS
-
-        </button>
-
-        <button
-            class="nav-item"
-            data-tab="tasks">
-
-            <span>✓</span>
-            TAREAS
-
-        </button>
-
-    </nav>
-
-</main>
-
-
-<!-- Toast -->
-
-<div
-    id="toast"
-    class="toast"
-    role="status">
-</div>
-
-
-<script
-    type="module"
-    src="js/main.js">
-</script>
-
-</body>
+        <h2>Tareas diarias</h2>
+        <p>Completa tus objetivos semanales y gana Geolita extra.</p>
+      </section>
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="mine">
+          <span>⛏</span>MINAR</button
+        ><button class="nav-item" data-tab="boost">
+          <span>⚡</span>MEJORAS</button
+        ><button class="nav-item" data-tab="profile">
+          <span>◉</span>PERFIL</button
+        ><button class="nav-item" data-tab="rank"><span>★</span>TOP</button
+        ><button class="nav-item" data-tab="tasks"><span>✓</span>TAREAS</button>
+      </nav>
+    </main>
+    <div id="toast" class="toast" role="status"></div>
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>

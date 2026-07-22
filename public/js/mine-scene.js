@@ -10,6 +10,10 @@ export class MineScene extends Phaser.Scene {
 
     }
 
+    preload() {
+        this.load.image("active-miner", "assets/active-miner.png");
+    }
+
     /* ==========================================================
        CREATE
     ========================================================== */
@@ -19,6 +23,20 @@ export class MineScene extends Phaser.Scene {
         this.createCrystal();
         this.createAnimations();
         this.registerInput();
+
+        this.miner = this.add.image(150, 275, "active-miner")
+            .setDisplaySize(116, 116)
+            .setVisible(false);
+
+        this.minerSwing = this.tweens.add({
+            targets: this.miner,
+            angle: -10,
+            duration: 360,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.inOut",
+            paused: true
+        });
 
     }
 
@@ -178,16 +196,38 @@ export class MineScene extends Phaser.Scene {
 
     }
 
+    setPickActive(pickId) {
+
+        if (!this.miner) return;
+
+        const colors = {
+            bronze: 0xd89562,
+            silver: 0xcadce8,
+            gold: 0xffd45f,
+            platinum: 0x96e9df,
+            diamond: 0x7fd6ff,
+            titanium: 0xb49aff
+        };
+
+        const active = Boolean(pickId);
+        this.miner.setVisible(active);
+
+        if (active) {
+            this.miner.setTint(colors[pickId] || 0xffffff);
+            this.minerSwing.play();
+        } else {
+            this.minerSwing.pause();
+        }
+
+    }
+
     /* ==========================================================
        CLICK
     ========================================================== */
 
     mine(pointer) {
-        console.log("mine");
-        this.events.emit(
-            "mine",
-            true
-        );
+        // Se llama directamente desde main.js: no depende del ciclo de inicio de Phaser.
+        window.geoMine?.(pointer);
 
         this.hitAnimation();
 

@@ -1,5 +1,7 @@
 const repository = require("./player.repository");
 const game = require("./game.service");
+const { botToken } = require("./config");
+const { verify } = require("./telegram-auth");
 
 
 /* ==========================================================
@@ -8,7 +10,9 @@ const game = require("./game.service");
 
 function identity(socket) {
 
-    const user = socket.handshake.auth?.user;
+    const user = botToken
+        ? verify(socket.handshake.auth?.initData, botToken)
+        : socket.handshake.auth?.user;
 
     return {
 
@@ -41,6 +45,11 @@ module.exports = io => {
 
         const account = identity(socket);
 
+        if (botToken && account.id === "guest-local") {
+            socket.emit("gameError", "No se pudo validar la sesión de Telegram");
+            return socket.disconnect(true);
+        }
+
         let player =
 
             await repository.get(account.id) ||
@@ -55,9 +64,10 @@ module.exports = io => {
 
         async function sync() {
 
-            const state =
-
-                game.publicState(player);
+            const state = {
+                ...game.publicState(player),
+                leaderboard: await repository.getLeaderboard(10, account.id),
+            };
 
             await repository.save(player);
 
@@ -126,11 +136,16 @@ module.exports = io => {
 
             socket.on(
 
-                "selectMine",
+                "findMine",
 
-                onSelectMine
+                onFindMine
 
             );
+
+            socket.on("cryptoRequest", type => {
+                const action = type === "withdraw" ? "retiro" : "depósito";
+                socket.emit("notice", `Solicitud de ${action} preparada. Conecta un proveedor cripto para procesarla.`);
+            });
 
         }
 
@@ -204,7 +219,7 @@ module.exports = io => {
 
                     "notice",
 
-                    `${pick.name} equipado: +${pick.dps} GEO/s`
+                    `${pick.name} activo: +${pick.damage} daño por segundo`
 
                 );
 
@@ -282,20 +297,15 @@ module.exports = io => {
            SELECT MINE
         ================================================== */
 
-        async function onSelectMine(id) {
+        async function onFindMine() {
 
             try {
 
-                game.selectMine(
-
-                    player,
-
-                    id
-
-                );
+                const mine = game.findMine(player);
 
                 await repository.save(player);
 
+                socket.emit("notice", `Encontraste: ${mine.name}`);
                 await sync();
 
             }

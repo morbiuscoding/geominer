@@ -1,331 +1,138 @@
-/* ==========================================================
-   ELEMENTS
-========================================================== */
-
-const $ = id => document.getElementById(id);
-
+const $ = (id) => document.getElementById(id);
+const icons = {
+  tapPower: "strike",
+  energyRegen: "regen",
+  maxEnergy: "battery",
+  criticalChance: "critical",
+  mineSearch: "radar",
+};
+const pickIcons = {
+  bronze: "⛏",
+  silver: "⚒️",
+  gold: "💰",
+  platinum: "🔷",
+  diamond: "💎",
+  titanium: "⚙️",
+};
+const pickColors = {
+  bronze: "#c77b42",
+  silver: "#c2d5e2",
+  gold: "#ffca55",
+  platinum: "#91e7df",
+  diamond: "#7dceff",
+  titanium: "#ae90ff",
+};
 export const els = [
-
-    "player-name",
-    "balance",
-
-    "energy",
-    "energy-text",
-    "max-energy",
-    "energy-fill",
-
-    "per-tap",
-    "per-second",
-    "regen",
-
-    "mine-selector",
-    "upgrade-list",
-    "pick-list",
-
-    "toast"
-
-].reduce((elements, id) => {
-
-    elements[id] = $(id);
-
-    return elements;
-
-}, {});
-
-
-/* ==========================================================
-   HELPERS
-========================================================== */
-
-export function fmt(value) {
-
-    return Math.floor(value)
-        .toLocaleString("en-US");
-
-}
-
-
-/* ==========================================================
-   TOAST
-========================================================== */
-
+  "player-name",
+  "geopoints",
+  "geolite",
+  "geolite-usd",
+  "profile-geolite",
+  "profile-geolite-usd",
+  "energy",
+  "energy-text",
+  "max-energy",
+  "energy-fill",
+  "per-tap",
+  "per-second",
+  "regen",
+  "mine-name",
+  "mine-health",
+  "mine-health-fill",
+  "find-mine",
+  "search-chances",
+  "upgrade-list",
+  "pick-list",
+  "rank-upgrades",
+  "rank-geopoints",
+  "rank-geolite",
+  "toast",
+].reduce((out, id) => ({ ...out, [id]: $(id) }), {});
+export const fmt = (n) => Math.floor(n).toLocaleString("en-US");
+export const geoliteFmt = (n) => Number(n).toFixed(4);
 export function toast(text) {
-
-    els.toast.textContent = text;
-
-    els.toast.classList.add("show");
-
-    clearTimeout(toast.timer);
-
-    toast.timer = setTimeout(() => {
-
-        els.toast.classList.remove("show");
-
-    }, 1600);
-
+  els.toast.textContent = text;
+  els.toast.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => els.toast.classList.remove("show"), 2200);
 }
-
-
-/* ==========================================================
-   RENDER
-========================================================== */
-
 export function render(state, emit) {
-
-    const {
-
-        player,
-        stats,
-        catalogs
-
-    } = state;
-
-    renderPlayer(player);
-
-    renderStats(player, stats);
-
-    renderMineSelector(
-        player,
-        catalogs,
-        emit
-    );
-
-    renderUpgrades(
-        catalogs,
-        emit
-    );
-
-    renderPicks(
-        player,
-        catalogs,
-        emit
-    );
-
+  const { player, stats, catalogs, searchChances } = state,
+    mine = catalogs.mines.find((m) => m.id === player.activeMine);
+  els["player-name"].textContent = player.name;
+  const usdPrice = player.geolite * 0.01;
+  els.geopoints.textContent = fmt(player.geopoints);
+  els.geolite.textContent = geoliteFmt(player.geolite);
+  els["geolite-usd"].textContent = `≈ $${usdPrice.toFixed(2)}`;
+  els["profile-geolite"].textContent = `${geoliteFmt(player.geolite)} ✦`;
+  els["profile-geolite-usd"].textContent = `≈ $${usdPrice.toFixed(2)}`;
+  els.energy.textContent = `${player.energy} / ${stats.maxEnergy}`;
+  els["energy-text"].textContent = player.energy;
+  els["max-energy"].textContent = `/${stats.maxEnergy}`;
+  els["energy-fill"].style.width =
+    `${(player.energy / stats.maxEnergy) * 100}%`;
+  els["per-tap"].textContent =
+    `${stats.damage} · ${stats.criticalChance}% CRIT`;
+  els["per-second"].textContent =
+    stats.autoDamage ? `${stats.autoDamage} / h` : "—";
+  els.regen.textContent = `+${stats.regenPerMinute} / min`;
+  els["mine-name"].textContent = mine.name;
+  els["mine-health"].textContent = `${player.mineHealth} / ${mine.health} HP`;
+  els["mine-health-fill"].style.width =
+    `${(player.mineHealth / mine.health) * 100}%`;
+  els["search-chances"].textContent = catalogs.mines
+    .map(
+      (m) =>
+        `${m.name.replace("Mina de ", "")}: ${searchChances[m.id].toFixed(1)}%`,
+    )
+    .join(" · ");
+  els["find-mine"].onclick = () => emit("findMine");
+  els["upgrade-list"].innerHTML = catalogs.upgrades
+    .map(
+      (u) =>
+        `<article class="shop-card"><span class="upgrade-icon icon-${icons[u.id] || "radar"}"></span><div><strong>${u.name} <small>NV. ${u.level}/${u.max}</small></strong><p>${u.description}</p></div><button data-upgrade="${u.id}">◆ ${fmt(u.cost)}</button></article>`,
+    )
+    .join("");
+  const counts = player.picks.reduce(
+    (o, p) => ((o[p.id] = (o[p.id] || 0) + 1), o),
+    {},
+  );
+  els["pick-list"].innerHTML = catalogs.picks
+    .map(
+      (p) => {
+        const icon = pickIcons[p.id] || "⛏";
+        const color = pickColors[p.id] || "#ffffff";
+        return `<article class="shop-card pick"><span class="pick-icon" style="background: ${color}22; color: ${color};">${icon}</span><div><strong>${p.name}${counts[p.id] ? ` <small>×${counts[p.id]} activo</small>` : ""}</strong><p>${p.damage} daño auto / h · 24 h</p></div><button data-pick="${p.id}">✦ ${p.geoliteCost}</button></article>`;
+      },
+    )
+    .join("");
+  document
+    .querySelectorAll("[data-upgrade]")
+    .forEach((b) => (b.onclick = () => emit("buyUpgrade", b.dataset.upgrade)));
+  renderLeaderboard(state.leaderboard);
+  document
+    .querySelectorAll("[data-pick]")
+    .forEach((b) => (b.onclick = () => emit("buyPick", b.dataset.pick)));
 }
 
-
-/* ==========================================================
-   PLAYER
-========================================================== */
-
-function renderPlayer(player) {
-
-    els["player-name"].textContent = player.name;
-
-    els.balance.textContent = fmt(
-        player.balance
-    );
-
-}
-
-
-/* ==========================================================
-   STATS
-========================================================== */
-
-function renderStats(player, stats) {
-
-    els.energy.textContent =
-        `${player.energy} / ${stats.maxEnergy}`;
-
-    els["energy-text"].textContent =
-        player.energy;
-
-    els["max-energy"].textContent =
-        `/${stats.maxEnergy}`;
-
-    els["energy-fill"].style.width =
-        `${player.energy / stats.maxEnergy * 100}%`;
-
-    els["per-tap"].textContent =
-        `+${stats.tap} GEO`;
-
-    els["per-second"].textContent =
-        `${stats.dps} GEO/s`;
-
-    els.regen.textContent =
-        `+${stats.regen} / seg`;
-
-}
-
-
-/* ==========================================================
-   MINES
-========================================================== */
-
-function renderMineSelector(
-    player,
-    catalogs,
-    emit
-) {
-
-    els["mine-selector"].innerHTML =
-        catalogs.mines.map(mine => `
-
-        <button
-            class="mine-chip ${mine.id === player.activeMine ? "chosen" : ""}"
-            data-mine="${mine.id}"
-            style="--mine:${mine.color}">
-
-            <i></i>
-
-            ${mine.name}
-
-        </button>
-
-    `).join("");
-
-    document
-        .querySelectorAll("[data-mine]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                emit(
-                    "selectMine",
-                    button.dataset.mine
-                );
-
-            };
-
-        });
-
-}
-
-
-/* ==========================================================
-   UPGRADES
-========================================================== */
-
-function renderUpgrades(
-    catalogs,
-    emit
-) {
-
-    els["upgrade-list"].innerHTML =
-        catalogs.upgrades.map(upgrade => `
-
-        <article class="shop-card">
-
-            <div>
-
-                <strong>
-
-                    ${upgrade.name}
-
-                    <small>
-
-                        NV. ${upgrade.level}/${upgrade.max}
-
-                    </small>
-
-                </strong>
-
-                <p>
-
-                    ${upgrade.description}
-
-                </p>
-
-            </div>
-
-            <button
-                data-upgrade="${upgrade.id}">
-
-                ◆ ${fmt(upgrade.cost)}
-
-            </button>
-
-        </article>
-
-    `).join("");
-
-    document
-        .querySelectorAll("[data-upgrade]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                emit(
-                    "buyUpgrade",
-                    button.dataset.upgrade
-                );
-
-            };
-
-        });
-
-}
-
-
-/* ==========================================================
-   PICKS
-========================================================== */
-
-function renderPicks(
-    player,
-    catalogs,
-    emit
-) {
-
-    els["pick-list"].innerHTML =
-        catalogs.picks.map(pick => {
-
-            const owned =
-                player.ownedPicks.includes(pick.id);
-
-            return `
-
-            <article
-                class="shop-card pick ${owned ? "owned" : ""}">
-
-                <div>
-
-                    <strong>
-
-                        ${pick.name}
-
-                    </strong>
-
-                    <p>
-
-                        +${pick.dps} GEO / segundo
-
-                    </p>
-
-                </div>
-
-                <button
-                    data-pick="${pick.id}"
-                    ${owned ? "disabled" : ""}>
-
-                    ${
-                        owned
-                            ? "COMPRADO"
-                            : `◆ ${fmt(pick.cost)}`
-                    }
-
-                </button>
-
-            </article>
-
-            `;
-
-        }).join("");
-
-    document
-        .querySelectorAll("[data-pick]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                emit(
-                    "buyPick",
-                    button.dataset.pick
-                );
-
-            };
-
-        });
-
+function renderLeaderboard(leaderboard) {
+  if (!leaderboard) return;
+  const renderLines = (list) =>
+    list
+      .map(
+        (item) =>
+          `<div class="leaderboard-item"><span class="leaderboard-rank">${item.rank}</span><span class="leaderboard-name">${item.name}</span><span class="leaderboard-value">${item.value}</span></div>`,
+      )
+      .join("");
+  const renderCurrent = (current) =>
+    current
+      ? `<div class="leaderboard-current">Tu posición: #${current.rank} — ${current.name} — ${current.value}</div>`
+      : "";
+
+  els["rank-upgrades"].innerHTML =
+    renderLines(leaderboard.topUpgrades) + renderCurrent(leaderboard.currentUpgrade);
+  els["rank-geopoints"].innerHTML =
+    renderLines(leaderboard.topGeoPoints) + renderCurrent(leaderboard.currentGeoPoints);
+  els["rank-geolite"].innerHTML =
+    renderLines(leaderboard.topGeolite) + renderCurrent(leaderboard.currentGeolite);
 }
