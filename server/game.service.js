@@ -141,8 +141,8 @@ function applyElapsed(player) {
 
     if (ticks) {
       const upgradeBonus = Math.max(0, s.damage - 1) * 10;
-      const perMinute = pick.damage + upgradeBonus;
-      const perTick = perMinute * (TICK_MS / 60_000);
+      const perHour = pick.damage + upgradeBonus;
+      const perTick = perHour * (TICK_MS / 3_600_000);
       for (let i = 0; i < ticks; i++) {
         const res = strike(player, perTick, "auto");
         events.push(res);

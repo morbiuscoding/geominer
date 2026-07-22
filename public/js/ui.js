@@ -68,7 +68,7 @@ export function render(state, emit) {
   els["per-tap"].textContent =
     `${stats.damage} · ${stats.criticalChance}% CRIT`;
   els["per-second"].textContent =
-    stats.autoDamage ? `${stats.autoDamage} / min` : "—";
+    stats.autoDamage ? `${stats.autoDamage} / h` : "—";
   els.regen.textContent = `+${stats.regenPerMinute} / min`;
   els["mine-name"].textContent = mine.name;
   const mineHealthDisplay = Math.max(0, Math.floor(player.mineHealth));
@@ -98,7 +98,7 @@ export function render(state, emit) {
         const icon = bronzePickIcon;
         const color = pickColors[p.id] || "#ffffff";
         // p.damage is interpreted as total hourly damage; UI explains it's applied over time
-        return `<article class="shop-card pick"><span class="pick-icon" style="background: ${color}22; color: ${color};">${icon}</span><div><strong>${p.name}${counts[p.id] ? ` <small>×${counts[p.id]} activo</small>` : ""}</strong><p>${p.damage} daño / min (aplicado gradualmente)</p></div><button data-pick="${p.id}">✦ ${p.geoliteCost}</button></article>`;
+        return `<article class="shop-card pick"><span class="pick-icon" style="background: ${color}22; color: ${color};">${icon}</span><div><strong>${p.name}${counts[p.id] ? ` <small>×${counts[p.id]} activo</small>` : ""}</strong><p>${p.damage} daño / h (aplicado gradualmente)</p></div><button data-pick="${p.id}">✦ ${p.geoliteCost}</button></article>`;
       },
     )
     .join("");
