@@ -135,9 +135,9 @@ function applyElapsed(player) {
   // Apply equipped pick auto-damage distributed across time (per-tick)
   const pick = equippedPick(player);
   if (pick && ticks) {
-    // original pick.damage represented damage per hour; compute damage per tick
-    const perHour = (pick.damage + s.damage);
-    const perTick = perHour * (TICK_MS / 3_600_000);
+    // pick.damage now represents damage per minute; compute damage per tick
+    const perMinute = pick.damage + s.damage;
+    const perTick = perMinute * (TICK_MS / 60_000);
     for (let i = 0; i < ticks; i++) {
       const res = strike(player, perTick, "auto");
       events.push(res);
