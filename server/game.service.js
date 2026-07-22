@@ -176,8 +176,7 @@ function publicState(player) {
         cost: upgradeCost(up, player.upgrades?.[up.id] || 0),
       })),
     },
-    events,
-    },
+    events
   };
 }
 function mine(player) {

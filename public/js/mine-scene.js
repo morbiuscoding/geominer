@@ -254,7 +254,7 @@ export class MineScene extends Phaser.Scene {
        FLOATING TEXT
     ========================================================== */
 
-    float(value, pointer, superior = false) {
+    float(value, pointer, superior = false, auto = false) {
 
         const x = pointer?.x ?? this.scale.width / 2;
         const y = pointer?.y ?? this.scale.height / 2;
@@ -274,9 +274,11 @@ export class MineScene extends Phaser.Scene {
 
                 fontStyle: "bold",
 
-                color: superior
-                    ? "#ffdb61"
-                    : "#d7fff7",
+                color: auto
+                    ? "#9ecbff"
+                    : superior
+                        ? "#ffdb61"
+                        : "#d7fff7",
 
                 stroke: "#174955",
 

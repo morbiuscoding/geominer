@@ -105,13 +105,8 @@ function onMineReward(result){
         ?.HapticFeedback
         ?.impactOccurred("light");
 
-    scene?.float(
-
-        result.damage,
-        null,
-        result.critical
-
-    );
+    const dmg = Math.floor(result.damage || 0);
+    scene?.float(dmg, null, result.critical, result.source === "auto");
 
     if (result.completed) {
         toast(`¡${result.completed.mine} completada! +${result.completed.geopoints} GeoPoints, +${result.completed.geolite} Geolita. Nueva: ${result.completed.nextMine}`);
