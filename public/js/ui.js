@@ -6,14 +6,8 @@ const icons = {
   criticalChance: "critical",
   mineSearch: "radar",
 };
-const pickIcons = {
-  bronze: "⛏",
-  silver: "⚒️",
-  gold: "💰",
-  platinum: "🔷",
-  diamond: "💎",
-  titanium: "⚙️",
-};
+// Use the bronze pick icon for all picks, color it per-tier
+const bronzePickIcon = "⛏";
 const pickColors = {
   bronze: "#c77b42",
   silver: "#c2d5e2",
@@ -100,9 +94,10 @@ export function render(state, emit) {
   els["pick-list"].innerHTML = catalogs.picks
     .map(
       (p) => {
-        const icon = pickIcons[p.id] || "⛏";
+        const icon = bronzePickIcon;
         const color = pickColors[p.id] || "#ffffff";
-        return `<article class="shop-card pick"><span class="pick-icon" style="background: ${color}22; color: ${color};">${icon}</span><div><strong>${p.name}${counts[p.id] ? ` <small>×${counts[p.id]} activo</small>` : ""}</strong><p>${p.damage} daño auto / h · 24 h</p></div><button data-pick="${p.id}">✦ ${p.geoliteCost}</button></article>`;
+        // p.damage is interpreted as total hourly damage; UI explains it's applied over time
+        return `<article class="shop-card pick"><span class="pick-icon" style="background: ${color}22; color: ${color};">${icon}</span><div><strong>${p.name}${counts[p.id] ? ` <small>×${counts[p.id]} activo</small>` : ""}</strong><p>${p.damage} daño / h (aplicado gradualmente)</p></div><button data-pick="${p.id}">✦ ${p.geoliteCost}</button></article>`;
       },
     )
     .join("");

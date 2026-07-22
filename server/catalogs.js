@@ -5,8 +5,13 @@ const mines = [
 ].map(([id, name, color, health, geoliteMin, geoliteMax], index) => ({ id, name, color, health, geoliteMin, geoliteMax, geoReward: 100 + (index + 1) * 100 }));
 
 const picks = [
-  ['bronze', 'Pico de Bronce', 50, 1], ['silver', 'Pico de Plata', 100, 3], ['gold', 'Pico de Oro', 200, 8],
-  ['platinum', 'Pico de Platino', 400, 20], ['diamond', 'Pico Diamante', 800, 50], ['titanium', 'Pico Titanio', 1600, 120]
+  // id, name, totalHourlyDamage, geoliteCost
+  ['bronze', 'Pico de Bronce', 50, 1],
+  ['silver', 'Pico de Plata', 100, 6],
+  ['gold', 'Pico de Oro', 200, 15],
+  ['platinum', 'Pico de Platino', 400, 35],
+  ['diamond', 'Pico Diamante', 800, 75],
+  ['titanium', 'Pico Titanio', 1600, 150],
 ].map(([id, name, damage, geoliteCost]) => ({ id, name, damage, geoliteCost }));
 
 const upgrades = [

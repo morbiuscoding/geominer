@@ -105,7 +105,8 @@ function strike(player, damage, source) {
     critical = Math.random() * 100 < s.criticalChance,
     dealt = damage * (critical ? 2 : 1);
   player.mineHealth -= dealt;
-  const earnedPoints = Math.floor(dealt);
+  // Award geopoints proportional to damage dealt (allow fractional accumulation)
+  const earnedPoints = dealt;
   player.geopoints += earnedPoints;
   player.geopointsEarned += earnedPoints;
   return {
@@ -119,17 +120,20 @@ function applyElapsed(player) {
   normalizePlayer(player);
   const now = Date.now(),
     elapsedMs = Math.max(0, now - player.lastUpdated),
-    hours = Math.floor(elapsedMs / 3_600_000),
+    minutes = Math.floor(elapsedMs / 60_000),
     s = stats(player);
   player.energy = Math.min(
     s.maxEnergy,
     player.energy + (elapsedMs / 60000) * s.regenPerMinute,
   );
   clearExpiredPicks(player, now);
+  // Apply equipped pick auto-damage distributed across time (per-minute ticks)
   const pick = equippedPick(player);
-  if (pick && hours)
-    for (let i = 0; i < hours; i++)
-      strike(player, pick.damage + s.damage, "auto");
+  if (pick && minutes) {
+    // original pick.damage represented damage per hour; distribute per minute
+    const perMinute = (pick.damage + s.damage) / 60;
+    for (let i = 0; i < minutes; i++) strike(player, perMinute, "auto");
+  }
   player.lastUpdated = now;
 }
 function publicState(player) {
