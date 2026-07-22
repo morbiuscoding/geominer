@@ -264,7 +264,7 @@ export class MineScene extends Phaser.Scene {
             x,
             y,
 
-            `${superior ? "SUPER " : ""}+${value}`,
+            `${auto ? "AUTO " : superior ? "SUPER " : ""}+${value}`,
 
             {
 
@@ -275,7 +275,7 @@ export class MineScene extends Phaser.Scene {
                 fontStyle: "bold",
 
                 color: auto
-                    ? "#9ecbff"
+                    ? "#7fb8ff"
                     : superior
                         ? "#ffdb61"
                         : "#d7fff7",

@@ -140,7 +140,8 @@ function applyElapsed(player) {
     player.autoTickRemainderMs = remainder;
 
     if (ticks) {
-      const perMinute = pick.damage;
+      const upgradeBonus = Math.max(0, s.damage - 1) * 10;
+      const perMinute = pick.damage + upgradeBonus;
       const perTick = perMinute * (TICK_MS / 60_000);
       for (let i = 0; i < ticks; i++) {
         const res = strike(player, perTick, "auto");
@@ -174,7 +175,7 @@ function publicState(player) {
     stats: {
       ...s,
       equippedPick: equipped?.id || null,
-      autoDamage: equipped ? equipped.damage + s.damage : 0,
+      autoDamage: equipped ? equipped.damage + Math.max(0, s.damage - 1) * 10 : 0,
     },
     searchChances: searchChances(player),
     catalogs: {
