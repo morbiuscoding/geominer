@@ -1,5 +1,8 @@
 const { picks, mines, upgrades } = require("./catalogs");
 const DAY = 86_400_000;
+// Interval (ms) at which auto-pick ticks are applied when elapsed time passes.
+// Use a relatively small value so periodic damage is visible in the client.
+const TICK_MS = 10_000; // 10 seconds
 const byId = (list, id) => list.find((item) => item.id === id);
 const upgradeCost = (upgrade, level) =>
   upgrade.fixedCost
@@ -120,7 +123,7 @@ function applyElapsed(player) {
   normalizePlayer(player);
   const now = Date.now(),
     elapsedMs = Math.max(0, now - player.lastUpdated),
-    minutes = Math.floor(elapsedMs / 60_000),
+    ticks = Math.floor(elapsedMs / TICK_MS),
     s = stats(player);
   player.energy = Math.min(
     s.maxEnergy,
@@ -129,13 +132,14 @@ function applyElapsed(player) {
   clearExpiredPicks(player, now);
 
   const events = [];
-  // Apply equipped pick auto-damage distributed across time (per-minute ticks)
+  // Apply equipped pick auto-damage distributed across time (per-tick)
   const pick = equippedPick(player);
-  if (pick && minutes) {
-    // original pick.damage represented damage per hour; distribute per minute
-    const perMinute = (pick.damage + s.damage) / 60;
-    for (let i = 0; i < minutes; i++) {
-      const res = strike(player, perMinute, "auto");
+  if (pick && ticks) {
+    // original pick.damage represented damage per hour; compute damage per tick
+    const perHour = (pick.damage + s.damage);
+    const perTick = perHour * (TICK_MS / 3_600_000);
+    for (let i = 0; i < ticks; i++) {
+      const res = strike(player, perTick, "auto");
       events.push(res);
       if (res.completed) break; // stop further ticks if mine finished
     }
