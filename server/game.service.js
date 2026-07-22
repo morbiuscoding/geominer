@@ -1,8 +1,8 @@
 const { picks, mines, upgrades } = require("./catalogs");
 const DAY = 86_400_000;
 // Interval (ms) at which auto-pick ticks are applied when elapsed time passes.
-// Use a relatively small value so periodic damage is visible in the client.
-const TICK_MS = 10_000; // 10 seconds
+// Use a small interval so periodic damage is more visible in the client.
+const TICK_MS = 5_000; // 5 seconds
 const byId = (list, id) => list.find((item) => item.id === id);
 const upgradeCost = (upgrade, level) =>
   upgrade.fixedCost
