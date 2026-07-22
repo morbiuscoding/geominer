@@ -140,7 +140,7 @@ function applyElapsed(player) {
     player.autoTickRemainderMs = remainder;
 
     if (ticks) {
-      const perMinute = pick.damage + s.damage;
+      const perMinute = pick.damage;
       const perTick = perMinute * (TICK_MS / 60_000);
       for (let i = 0; i < ticks; i++) {
         const res = strike(player, perTick, "auto");
