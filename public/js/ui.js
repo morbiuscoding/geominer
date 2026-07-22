@@ -71,7 +71,8 @@ export function render(state, emit) {
     stats.autoDamage ? `${stats.autoDamage} / h` : "—";
   els.regen.textContent = `+${stats.regenPerMinute} / min`;
   els["mine-name"].textContent = mine.name;
-  els["mine-health"].textContent = `${player.mineHealth} / ${mine.health} HP`;
+  const mineHealthDisplay = Number(player.mineHealth).toFixed(1);
+  els["mine-health"].textContent = `${mineHealthDisplay} / ${mine.health} HP`;
   els["mine-health-fill"].style.width =
     `${(player.mineHealth / mine.health) * 100}%`;
   els["search-chances"].textContent = catalogs.mines

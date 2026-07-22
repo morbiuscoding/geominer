@@ -105,7 +105,7 @@ function onMineReward(result){
         ?.HapticFeedback
         ?.impactOccurred("light");
 
-    const dmg = Math.floor(result.damage || 0);
+    const dmg = Number(result.damage || 0).toFixed(2);
     scene?.float(dmg, null, result.critical, result.source === "auto");
 
     if (result.completed) {
