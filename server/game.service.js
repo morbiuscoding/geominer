@@ -36,6 +36,7 @@ function normalizePlayer(player) {
   player.picks ??= [];
   player.upgrades ??= {};
   player.lastUpdated ??= Date.now();
+  player.autoTickRemainderMs ??= 0;
 }
 function stats(player) {
   const u = player.upgrades || {};
@@ -123,7 +124,6 @@ function applyElapsed(player) {
   normalizePlayer(player);
   const now = Date.now(),
     elapsedMs = Math.max(0, now - player.lastUpdated),
-    ticks = Math.floor(elapsedMs / TICK_MS),
     s = stats(player);
   player.energy = Math.min(
     s.maxEnergy,
@@ -132,18 +132,24 @@ function applyElapsed(player) {
   clearExpiredPicks(player, now);
 
   const events = [];
-  // Apply equipped pick auto-damage distributed across time (per-tick)
   const pick = equippedPick(player);
-  if (pick && ticks) {
-    // pick.damage now represents damage per minute; compute damage per tick
-    const perMinute = pick.damage + s.damage;
-    const perTick = perMinute * (TICK_MS / 60_000);
-    for (let i = 0; i < ticks; i++) {
-      const res = strike(player, perTick, "auto");
-      events.push(res);
-      if (res.completed) break; // stop further ticks if mine finished
+  if (pick) {
+    const totalElapsed = player.autoTickRemainderMs + elapsedMs;
+    const ticks = Math.floor(totalElapsed / TICK_MS);
+    const remainder = totalElapsed - ticks * TICK_MS;
+    player.autoTickRemainderMs = remainder;
+
+    if (ticks) {
+      const perMinute = pick.damage + s.damage;
+      const perTick = perMinute * (TICK_MS / 60_000);
+      for (let i = 0; i < ticks; i++) {
+        const res = strike(player, perTick, "auto");
+        events.push(res);
+        if (res.completed) break; // stop further ticks if mine finished
+      }
     }
   }
+
   player.lastUpdated = now;
   return events;
 }
