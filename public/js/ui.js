@@ -71,7 +71,7 @@ export function render(state, emit) {
     stats.autoDamage ? `${stats.autoDamage} / h` : "—";
   els.regen.textContent = `+${stats.regenPerMinute} / min`;
   els["mine-name"].textContent = mine.name;
-  const mineHealthDisplay = Number(player.mineHealth).toFixed(1);
+  const mineHealthDisplay = Math.max(0, Math.floor(player.mineHealth));
   els["mine-health"].textContent = `${mineHealthDisplay} / ${mine.health} HP`;
   els["mine-health-fill"].style.width =
     `${(player.mineHealth / mine.health) * 100}%`;
