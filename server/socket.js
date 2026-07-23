@@ -1,6 +1,6 @@
 const repository = require("./player.repository");
 const game = require("./game.service");
-const { botToken } = require("./config");
+const { botToken, botUsername } = require("./config");
 const { verify } = require("./telegram-auth");
 
 
@@ -50,25 +50,55 @@ module.exports = io => {
             return socket.disconnect(true);
         }
 
-        let player =
+        const referrerId = socket.handshake.auth?.referrer || null;
+        let player = await repository.get(account.id);
+        const isNewPlayer = !player;
+        if (!player) {
+            player = game.newPlayer(account.id, account.name, referrerId);
+        }
 
-            await repository.get(account.id) ||
+        async function registerReferrer() {
+            if (!isNewPlayer || !player.referrer || player.referrer === player.telegramId) return;
+            const referrer = await repository.get(player.referrer);
+            if (!referrer) {
+                player.referrer = null;
+                return;
+            }
+            referrer.referrals = referrer.referrals || [];
+            if (!referrer.referrals.includes(player.telegramId)) {
+                referrer.referrals.push(player.telegramId);
+                referrer.referralCount = referrer.referrals.length;
+                referrer.geolite = (referrer.geolite || 0) + 1;
+                referrer.geoliteEarned = (referrer.geoliteEarned || 0) + 1;
+                await repository.save(referrer);
+            }
+        }
 
-            game.newPlayer(
-
-                account.id,
-
-                account.name
-
-            );
+        async function handleReferralPayouts() {
+            if (!player.referrer || !player.pendingReferralPoints) return;
+            const referrer = await repository.get(player.referrer);
+            if (!referrer) {
+                player.referrer = null;
+                player.pendingReferralPoints = 0;
+                return;
+            }
+            const bonus = player.pendingReferralPoints * 0.05;
+            referrer.geopoints = (referrer.geopoints || 0) + bonus;
+            referrer.geopointsEarned = (referrer.geopointsEarned || 0) + bonus;
+            await repository.save(referrer);
+            player.pendingReferralPoints = 0;
+        }
 
         async function sync() {
 
             const state = {
                 ...game.publicState(player),
+                referralBot: botUsername,
                 leaderboard: await repository.getLeaderboard(10, account.id),
+                topReferrers: await repository.getTopReferrers(5),
             };
 
+            await handleReferralPayouts();
             await repository.save(player);
 
             socket.emit("state", state);
@@ -82,6 +112,7 @@ module.exports = io => {
 
         }
 
+        await registerReferrer();
         await sync();
 
         registerEvents();

@@ -127,6 +127,25 @@ async function getLeaderboard(limit = 10, currentId) {
     };
 }
 
+async function getTopReferrers(limit = 5) {
+    const allPlayers = useMongo
+        ? await Player.find().lean()
+        : Array.from(memory.values());
+
+    const normalized = allPlayers.map(p => ({
+        telegramId: p.telegramId,
+        name: String(p.name || 'MINERO').slice(0,24).toUpperCase(),
+        referralCount: Number(p.referralCount || (p.referrals || []).length || 0),
+    }));
+
+    const sorted = normalized
+        .slice()
+        .sort((a,b) => b.referralCount - a.referralCount)
+        .map((item, index) => ({ rank: index + 1, name: item.name, value: item.referralCount, id: item.telegramId }));
+
+    return sorted.slice(0, limit);
+}
+
 /* ==========================================================
    SAVE PLAYER
 ========================================================== */
@@ -199,5 +218,7 @@ module.exports = {
     save,
 
     getLeaderboard,
+
+    getTopReferrers,
 
 };

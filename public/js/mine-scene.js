@@ -24,7 +24,7 @@ export class MineScene extends Phaser.Scene {
         this.createAnimations();
         this.registerInput();
 
-        this.miner = this.add.image(150, 275, "active-miner")
+        this.miner = this.add.image(270, 304, "active-miner")
             .setDisplaySize(116, 116)
             .setVisible(false);
 
@@ -49,8 +49,8 @@ export class MineScene extends Phaser.Scene {
         const { width, height } = this.scale;
 
         this.group = this.add.container(
-            width / 2,
-            height / 2
+            width / 2 + 30,
+            height / 2 + 18
         );
 
         this.glow = this.add.circle(

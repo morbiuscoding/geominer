@@ -23,6 +23,7 @@
             ><small>VER PERFIL</small></span
           ></button
         ><span class="online">● EN LÍNEA</span>
+        <span id="top-referrer" class="top-referrer">Top referido: —</span>
       </header>
       <section class="currencies">
         <div class="balance-panel">
@@ -103,6 +104,29 @@
           <button data-crypto="deposit">＋ Ingresar Geolita</button
           ><button data-crypto="withdraw">↑ Retirar Geolita</button>
         </div>
+        <div class="crypto-actions">
+          <button id="referral-button">Referidos</button>
+        </div>
+        <section id="referral-panel" class="referral-panel hidden">
+          <strong>Referidos</strong>
+          <p class="intro">
+            Gana 1 Geolita por cada referido que se registre y recibe el 5% de
+            sus GeoPoints.
+          </p>
+          <div class="referral-card">
+            <p><b>Código</b></p>
+            <p id="referral-code"><span class="referral-link">-</span> <button class="copy-btn" title="Copiar">📋</button></p>
+          </div>
+          <div class="referral-card">
+            <p><b>Referidos</b></p>
+            <p id="referral-count">0</p>
+          </div>
+          <div class="referral-card">
+            <p><b>Te referenció</b></p>
+            <p id="referrer-hint">Nadie</p>
+          </div>
+          <!-- copy button moved next to the link -->
+        </section>
       </section>
       <section id="rank-view" class="view">
         <h2>Ranking global</h2>

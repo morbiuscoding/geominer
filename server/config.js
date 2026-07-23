@@ -17,5 +17,6 @@ module.exports = {
   port: process.env.PORT || 3006,
   mongoUri,
   botToken: process.env.TELEGRAM_BOT_TOKEN || '',
+  botUsername: process.env.TELEGRAM_BOT_USERNAME || '',
   saveIntervalMs: 10_000
 };

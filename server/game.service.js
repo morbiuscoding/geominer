@@ -4,12 +4,20 @@ const DAY = 86_400_000;
 // Use a small interval so periodic damage is more visible in the client.
 const TICK_MS = 5_000; // 5 seconds
 const byId = (list, id) => list.find((item) => item.id === id);
-const upgradeCost = (upgrade, level) =>
-  upgrade.fixedCost
+const upgradeCost = (upgrade, level) => {
+  if (upgrade.id === "mineSearch") {
+    // Sequence: 1000, 4000, 12000, 32000, ...
+    return Math.ceil(upgrade.baseCost * level * Math.pow(2, level - 1));
+  }
+  return upgrade.fixedCost
     ? upgrade.baseCost
     : Math.ceil(upgrade.baseCost * Math.pow(upgrade.factor, level));
+};
 const activeMine = (player) => byId(mines, player.activeMine) || mines[0];
-function newPlayer(telegramId, name = "MINERO") {
+const randomMineHealth = (mine) =>
+  Math.max(1, Math.floor(mine.health * (0.75 + Math.random() * 0.5)));
+function newPlayer(telegramId, name = "MINERO", referrer = null) {
+  const initialHealth = randomMineHealth(mines[0]);
   return {
     telegramId,
     name,
@@ -20,7 +28,12 @@ function newPlayer(telegramId, name = "MINERO") {
     energy: 100,
     lastUpdated: Date.now(),
     activeMine: "bronze",
-    mineHealth: 250,
+    mineHealth: initialHealth,
+    mineMaxHealth: initialHealth,
+    referrer,
+    referrals: [],
+    referralCount: 0,
+    pendingReferralPoints: 0,
     picks: [],
     upgrades: {},
   };
@@ -32,7 +45,12 @@ function normalizePlayer(player) {
   player.geoliteEarned ??= 0;
   player.energy ??= 100;
   player.activeMine ??= "bronze";
-  player.mineHealth ??= activeMine(player).health;
+  player.mineMaxHealth ??= randomMineHealth(activeMine(player));
+  player.mineHealth ??= player.mineMaxHealth;
+  player.referrer ??= null;
+  player.referrals ??= [];
+  player.referralCount ??= player.referrals.length;
+  player.pendingReferralPoints ??= 0;
   player.picks ??= [];
   player.upgrades ??= {};
   player.lastUpdated ??= Date.now();
@@ -53,15 +71,14 @@ function stats(player) {
   };
 }
 function searchChances(player) {
-  const bonus = player.upgrades?.mineSearch || 0,
-    rare = 60 + bonus;
+  const level = Math.min(player.upgrades?.mineSearch || 0, 8);
   return {
-    bronze: Math.max(0, 40 - bonus),
-    silver: rare * 0.5,
-    gold: (rare * 17) / 60,
-    platinum: (rare * 8) / 60,
-    diamond: (rare * 4) / 60,
-    titanium: rare / 60,
+    bronze: Math.max(0, 40 - level * 5),
+    silver: 30 + level,
+    gold: 17 + level,
+    platinum: 8 + level,
+    diamond: 4 + level,
+    titanium: 1 + level,
   };
 }
 function rollMine(player) {
@@ -96,7 +113,8 @@ function finishMine(player) {
   player.geoliteEarned += geolite;
   const nextMine = rollMine(player);
   player.activeMine = nextMine.id;
-  player.mineHealth = nextMine.health;
+  player.mineMaxHealth = randomMineHealth(nextMine);
+  player.mineHealth = player.mineMaxHealth;
   return {
     mine: mine.name,
     geopoints: mine.geoReward,
@@ -113,6 +131,7 @@ function strike(player, damage, source) {
   const earnedPoints = dealt;
   player.geopoints += earnedPoints;
   player.geopointsEarned += earnedPoints;
+  player.pendingReferralPoints = (player.pendingReferralPoints || 0) + earnedPoints;
   return {
     damage: dealt,
     critical,
@@ -162,6 +181,8 @@ function publicState(player) {
   return {
     player: {
       name: player.name,
+      telegramId: player.telegramId,
+      referralCode: player.telegramId,
       geopoints: Math.floor(player.geopoints),
       geopointsEarned: Math.floor(player.geopointsEarned),
       geolite: Number(player.geolite.toFixed(4)),
@@ -169,6 +190,9 @@ function publicState(player) {
       energy: Math.floor(player.energy),
       activeMine: player.activeMine,
       mineHealth: Math.max(0, Math.floor(player.mineHealth)),
+      mineMaxHealth: Math.max(1, Math.floor(player.mineMaxHealth || 0)),
+      referrer: player.referrer || null,
+      referralCount: player.referralCount || 0,
       picks: player.picks,
       upgrades: player.upgrades,
     },
@@ -224,7 +248,8 @@ function findMine(player) {
   player.energy -= 50;
   const mine = rollMine(player);
   player.activeMine = mine.id;
-  player.mineHealth = mine.health;
+  player.mineMaxHealth = randomMineHealth(mine);
+  player.mineHealth = player.mineMaxHealth;
   return mine;
 }
 module.exports = {

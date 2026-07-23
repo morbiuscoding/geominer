@@ -25,6 +25,12 @@ export const els = [
   "profile-geolite-usd",
   "energy",
   "energy-text",
+  "referral-button",
+  "referral-code",
+  "referral-count",
+  "referrer-hint",
+  "top-referrer",
+  "referral-panel",
   "max-energy",
   "energy-fill",
   "per-tap",
@@ -71,10 +77,42 @@ export function render(state, emit) {
     stats.autoDamage ? `${stats.autoDamage} / h` : "—";
   els.regen.textContent = `+${stats.regenPerMinute} / min`;
   els["mine-name"].textContent = mine.name;
+
+  const referralCode = player.referralCode || "-";
+  const referralBot = state.referralBot || null;
+  const referralLink = referralBot
+    ? `https://t.me/${referralBot}?start=${encodeURIComponent(referralCode)}`
+    : `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(referralCode)}`;
+  // Render link plus copy icon inside the referral-code element
+  const referralHtml = referralBot
+    ? `<span class="referral-link"><a href="${referralLink}" target="_blank" rel="noreferrer">${referralLink}</a></span> <button class="copy-btn" title="Copiar">📋</button>`
+    : `<span class="referral-link">?ref=${referralCode}</span> <button class="copy-btn" title="Copiar">📋</button>`;
+  els["referral-code"].innerHTML = referralHtml;
+  els["referral-count"].textContent = player.referralCount ?? 0;
+  els["top-referrer"].textContent = state.topReferrers && state.topReferrers.length
+    ? `Top referidor: ${state.topReferrers[0].name} — ${state.topReferrers[0].value}`
+    : "Top referidor: —";
+  els["referrer-hint"].textContent = player.referrer
+    ? `ID: ${player.referrer}`
+    : "Nadie";
+  els["referral-button"].onclick = () => {
+    els["referral-panel"].classList.toggle("hidden");
+  };
+
+  // If the copy icon/button exists inside the referral-code area, hook it.
+  const copyBtn = document.querySelector("#referral-code .copy-btn");
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(referralLink).then(() => {
+        toast("Enlace de referido copiado");
+      });
+    };
+  }
   const mineHealthDisplay = Math.max(0, Math.floor(player.mineHealth));
-  els["mine-health"].textContent = `${mineHealthDisplay} / ${mine.health} HP`;
+  const mineMaxDisplay = Math.max(0, Math.floor(player.mineMaxHealth || mine.health));
+  els["mine-health"].textContent = `${mineHealthDisplay} / ${mineMaxDisplay} HP`;
   els["mine-health-fill"].style.width =
-    `${(player.mineHealth / mine.health) * 100}%`;
+    `${(player.mineHealth / mineMaxDisplay) * 100}%`;
   els["search-chances"].textContent = catalogs.mines
     .map(
       (m) =>
